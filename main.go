@@ -55,12 +55,34 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(msg)
 }
 
+func greetHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
+	query := r.URL.Query()
+	name := query.Get("name")
+	age := query.Get("age")
+
+	if name == "" {
+		name = "Гость"
+	}
+
+	response := map[string]string{
+		"message": fmt.Sprintf("Привет, %s! Ваш возвраст %s", name, age),
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
 func main() {
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/method", methodHandler)
 
 	http.HandleFunc("/hello", helloHandler)
 	http.HandleFunc("/echo", echoHandler)
+
+	http.HandleFunc("/greet", greetHandler)
 
 	fmt.Println("Сервер запущен на порту 8080")
 	http.ListenAndServe(":8080", nil)
